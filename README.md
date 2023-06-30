@@ -2,7 +2,7 @@
 
 A script for writing pixels on your computer and importing the file back through your phone.
 
-Special thanks to [pTinosq](https://github.com/pTinosq) for their Pixels reader!
+Special thanks to [pTinosq](https://github.com/pTinosq) for his Pixels reader!
 
 ## How to Use It
 - Export your pixels from the [Pixel app](https://teovogel.me/pixels/)
