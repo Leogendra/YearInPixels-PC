@@ -34,6 +34,22 @@ def is_date_valid(date: str) -> bool:
         return True
     except ValueError:
         return False
+    
+
+def format_text(text):
+    accents = {
+        'a': ['à', 'ã', 'á', 'â'],
+        'e': ['é', 'è', 'ê', 'ë'],
+        'i': ['î', 'ï'],
+        'u': ['ù', 'ü', 'û'],
+        'o': ['ô', 'ö'],
+        '': [' ', '-', '_', '\'', '(', ')', '"']
+    }
+    text = text.lower()
+    for (char, special_chars) in accents.items():
+        for special in special_chars:
+            text = text.replace(special, char)
+    return text
 
 
 def find_pixel_file() -> str:
@@ -104,31 +120,45 @@ def search_pixel_by_date(pixels, search_date):
     return matching_pixels[0] if matching_pixels else "No pixel found" # Return the first pixel found instead of printing it because it's used in the get_aviability function
 
 
-def search_pixel_by_mood(pixels, search_mood):
+def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
     matching_pixels = []
     for pixel in pixels:
         if str(pixel.score) == str(search_mood):
             matching_pixels.append(pixel)
-    for pixel in (matching_pixels[:number_of_pixels] if matching_pixels else ["No pixel found"]):
-        print(pixel)
+    if len(matching_pixels) > 0:
+        print(f"{len(matching_pixels)} pixels found")
+        for pixel in matching_pixels[:number_of_pixels]:
+            print(pixel)
+    else:
+        print("No pixel found")
 
 
-def search_pixel_by_tag(pixels, search_tag):
+def search_pixel_by_tag(pixels, search_tag, number_of_pixels):
+    formated_tag = format_text(search_tag)
     matching_pixels = []
     for pixel in pixels:
-        if search_tag in pixel.tags:
+        if formated_tag in format_text(pixel.tags):
             matching_pixels.append(pixel)
-    for pixel in (matching_pixels[:number_of_pixels] if matching_pixels else ["No pixel found"]):
-        print(pixel)
+    if len(matching_pixels) > 0:
+        print(f"{len(matching_pixels)} pixels found")
+        for pixel in matching_pixels[:number_of_pixels]:
+            print(pixel)
+    else:
+        print("No pixel found")
 
 
-def search_pixel_by_notes(pixels, search_notes):
+def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
+    formated_notes = format_text(search_notes)
     matching_pixels = []
     for pixel in pixels:
-        if search_notes in pixel.notes:
+        if formated_notes in format_text(pixel.notes):
             matching_pixels.append(pixel)
-    for pixel in (matching_pixels[:number_of_pixels] if matching_pixels else ["No pixel found"]):
-        print(pixel)
+    if len(matching_pixels) > 0:
+        print(f"{len(matching_pixels)} pixels found")
+        for pixel in matching_pixels[:number_of_pixels]:
+            print(pixel)
+    else:
+        print("No pixel found")
 
 
 # Create a pixel
@@ -256,9 +286,9 @@ if __name__ == "__main__":
         print('='*25)
         print("1. Write a pixel")
         print("2. Search pixel by date")
-        print("3. Search pixel by mood")
-        print("4. Search pixel by tag")
-        print("5. Search pixel by notes")
+        print("3. Search pixel by notes")
+        print("4. Search pixel by mood")
+        print("5. Search pixel by tag")
         print("else. exit")
         choice_menu = input("Choice: ")
         print()
@@ -270,26 +300,31 @@ if __name__ == "__main__":
             
             print(new_pixel)
 
-        elif choice_menu == "2":
-            date_to_find = input("Date to find (YYYY-MM-DD): ")
-            while not(is_date_valid(date_to_find)):
-                date = input("Enter a valid date (YYYY-MM-DD, without trailing zeros): ")
-            print(search_pixel_by_date(pixels, date_to_find))
+        elif choice_menu in ["2", "3", "4", "5"]:
+            if choice_menu == "2":
+                search_prompt = "Date to find (YYYY-MM-DD, without trailing zeros): "
+                search_func = search_pixel_by_date
+            elif choice_menu == "3":
+                search_prompt = "Notes to find: "
+                search_func = search_pixel_by_notes
+            elif choice_menu == "4":
+                search_prompt = "Mood to find [1-5]: "
+                search_func = search_pixel_by_mood
+            elif choice_menu == "5":
+                search_prompt = "Tag to find: "
+                search_func = search_pixel_by_tag
 
-        elif choice_menu == "3":
-            mood_to_find = input("Mood to find [1-5]: ")
-            number_of_pixels = int(input("Number of pixels: "))
-            search_pixel_by_mood(pixels, mood_to_find, number_of_pixels)
+            search_value = input(search_prompt)
 
-        elif choice_menu == "4":
-            tag_to_find = input("Tag to find: ")
-            number_of_pixels = int(input("Number of pixels: "))
-            search_pixel_by_tag(pixels, tag_to_find, number_of_pixels)
+            while (choice_menu == "2") and (not is_date_valid(search_value)):
+                search_value = input("Enter a valid input: ")
 
-        elif choice_menu == "5":
-            notes_to_find = input("Notes to find: ")
-            number_of_pixels = int(input("Number of pixels: "))
-            search_pixel_by_notes(pixels, notes_to_find, number_of_pixels)
+            try:
+                number_of_pixels = int(input("Number of pixels: "))
+            except ValueError:
+                number_of_pixels = 1
+
+            search_func(pixels, search_value, number_of_pixels)
 
         else:
             print("Have a nice day !")
