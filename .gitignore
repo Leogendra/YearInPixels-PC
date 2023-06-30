@@ -10,8 +10,7 @@ __pycache__/
 venv/
 
 # private data
-pixels*.json
-PIXELS*.json
+*.json
 
 # Distribution / packaging
 .Python

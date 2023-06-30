@@ -37,7 +37,7 @@ def is_date_valid(date: str) -> bool:
 
 
 def find_pixel_file() -> str:
-    pattern = "PIXELS-*.json"
+    pattern = "*.json"
     files = glob.glob(pattern)
     files.sort()  # Sort the files in ascending order
     if files:
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     try:
         pixels = load_pixels()
     except Exception as exception:
-        print("No PIXELS-***.json found.\nfull error :", exception)
+        print("No json file found.\nfull error :", exception)
         exit()
 
     ##########################
