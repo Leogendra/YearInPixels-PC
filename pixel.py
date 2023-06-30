@@ -83,17 +83,17 @@ def write_to_json(pixels, new_pixel):
 
 
 # Color functions
-def get_color_of_mood(mood: str) -> str:
+def get_color_of_mood(mood: int):
     # You can customize your palette here
-    if mood == '1':
+    if mood == 1:
         return RED
-    elif mood == '2':
+    elif mood == 2:
         return RED
-    if mood == '3':
+    if mood == 3:
         return YELLOW
-    elif mood == '4':
+    elif mood == 4:
         return GREEN
-    elif mood == '5':
+    elif mood == 5:
         return GREEN
     else:
         return BLUE
