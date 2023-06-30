@@ -15,4 +15,4 @@ Enjoy!
 ### Additional Features
 - A warning will appear if you attempt to overwrite an existing pixel.
 - There are checks in place if you misspell a date.
-- You can customize your palette in the `get_color_of_mood` function (line 70).
+- You can customize your palette in the `get_color_of_mood` function (line 85).

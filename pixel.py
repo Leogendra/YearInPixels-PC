@@ -81,7 +81,6 @@ def write_to_json(pixels, new_pixel):
     print("\n> Pixel added to JSON file !\n")
 
 
-
 # Color functions
 def get_color_of_mood(mood: int):
     # You can customize your palette here
