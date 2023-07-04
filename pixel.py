@@ -1,36 +1,9 @@
 from datetime import datetime, timedelta
+from styles import *
 import glob
 import json
 import os
 
-
-# Styles
-RESET = "\x1b[0m"  # Reset styles
-UNDERLINE = "\x1b[4m"  # Underline text
-BOLD = "\x1b[1m"  # Bold text
-
-# Colors
-RED = "\x1b[31m"  # Red text
-GREEN = "\x1b[32m"  # Green text
-YELLOW = "\x1b[33m"  # Yellow text
-BLUE = "\x1b[34m"  # Blue text
-
-
-# Color functions
-def get_color_of_mood(mood: int):
-    # You can customize your palette here
-    if mood == 1:
-        return RED
-    elif mood == 2:
-        return RED
-    if mood == 3:
-        return YELLOW
-    elif mood == 4:
-        return GREEN
-    elif mood == 5:
-        return GREEN
-    else:
-        return BLUE
 
 
 # Utils
