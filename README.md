@@ -1,4 +1,4 @@
-# YearInPixels-writer
+# YearInPixels-PC
 
 A script for writing pixels on your computer and importing the file back through your phone.
 
