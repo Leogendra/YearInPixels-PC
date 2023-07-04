@@ -41,7 +41,11 @@ def format_text(text):
     return text
 
 
-def find_pixel_file() -> str:
+#######################
+#     Pixels file     #
+#######################
+
+def find_pixel_file():
     pattern = "*.json"
     files = glob.glob(pattern)
     files.sort()  # Trie les fichiers par ordre croissant
@@ -68,14 +72,13 @@ def find_pixel_file() -> str:
             print("Please enter a valid number.")
 
 
-# Function to load a pixels.json file
-def load_pixels() -> list:
+
+def load_pixels():
     pixel_file = find_pixel_file()
     with open(pixel_file, "r", encoding='utf-8') as f:
         pixels = json.load(f)
     
     return [Pixel(pixel=pixel) for pixel in pixels]
-        
 
 
 def write_to_json(pixels, new_pixel):
@@ -89,6 +92,27 @@ def write_to_json(pixels, new_pixel):
     print("\n> Pixel added to JSON file !\n")
 
 
+def merge_pixels_files():
+    pass
+
+#####################
+#      Display      #
+#####################
+
+
+def display_pixels_month():
+    pass
+        
+
+
+def display_pixels_year():
+    pass
+
+
+
+######################
+#       Checks       #
+######################
 
 def get_aviability(pixels, date: str) -> str:
     return search_pixel_by_date(pixels, date) == "No pixel found"
@@ -100,15 +124,19 @@ def get_color_aviability(pixels, date: str) -> str:
         return RED
 
 
+########################
+#   Search functions   #
+########################
 
-# Search functions
 def search_pixel_by_date(pixels, search_date):
     matching_pixels = []
     for pixel in pixels:
         if pixel.date == search_date:
             matching_pixels.append(pixel)
             break
-    return matching_pixels[0] if matching_pixels else "No pixel found" # Return the first pixel found instead of printing it because it's used in the get_aviability function
+
+    # Returns the first pixel found instead of printing it because it's used in the get_aviability function    
+    return matching_pixels[0] if matching_pixels else "No pixel found" 
 
 
 def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
@@ -152,7 +180,10 @@ def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
         print("No pixel found")
 
 
-# Create a pixel
+########################
+#    Create a Pixel    #
+########################
+
 def write_pixel(pixels):
 
     today = datetime_to_string(datetime.now())
@@ -214,6 +245,7 @@ class Pixel:
     def __init__(self, pixel: dict = None):
         self.date = pixel["date"]
         self.pixel_type = pixel["type"]
+        # self.scores = pixel["scores"] # Not yet implemented
         self.score = pixel["scores"][0]
         self.notes = pixel["notes"]
         self.tags = pixel["tags"]
@@ -236,12 +268,9 @@ class Pixel:
 
     
 
-    
-
 class PixelEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Pixel):
-            # Create a new dictionary with modified attribute names
             encoded_pixel = {
                 "date": obj.date,
                 "type": obj.pixel_type,
