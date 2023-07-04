@@ -100,13 +100,30 @@ def merge_pixels_files():
 #####################
 
 
-def display_pixels_month():
-    pass
-        
+def display_pixels_month(pixels, number_to_display):
+    pass    
 
 
-def display_pixels_year():
-    pass
+def display_pixels_year(pixels, number_to_display):
+    try:
+        number_to_display = int(number_to_display)
+        if (number_to_display < 1):
+            number_to_display = 1000
+    except ValueError:
+        number_to_display = 1000
+
+    pixels_to_display = pixels.copy()
+    pixels_to_display[-number_to_display:]
+
+    display_grid = {}
+
+    for pixel in pixels_to_display:
+        date = pixel.date
+        month = date.split("-")[1]
+        year = date.split("-")[0]
+        if display_grid[year+'-'+month] == None:
+            display_grid[year+'-'+month] = []
+        display_grid[year+'-'+month].append(get_color_of_mood(pixel.score) + "██" + RESET)
 
 
 
