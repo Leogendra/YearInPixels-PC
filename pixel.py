@@ -4,7 +4,6 @@ import json
 import os
 
 
-
 # Styles
 RESET = "\x1b[0m"  # Reset styles
 UNDERLINE = "\x1b[4m"  # Underline text
@@ -15,6 +14,23 @@ RED = "\x1b[31m"  # Red text
 GREEN = "\x1b[32m"  # Green text
 YELLOW = "\x1b[33m"  # Yellow text
 BLUE = "\x1b[34m"  # Blue text
+
+
+# Color functions
+def get_color_of_mood(mood: int):
+    # You can customize your palette here
+    if mood == 1:
+        return RED
+    elif mood == 2:
+        return RED
+    if mood == 3:
+        return YELLOW
+    elif mood == 4:
+        return GREEN
+    elif mood == 5:
+        return GREEN
+    else:
+        return BLUE
 
 
 # Utils
@@ -55,9 +71,28 @@ def format_text(text):
 def find_pixel_file() -> str:
     pattern = "*.json"
     files = glob.glob(pattern)
-    files.sort()  # Sort the files in ascending order
-    if files:
+    files.sort()  # Trie les fichiers par ordre croissant
+
+    if not files:
+        print("No JSON file found in current directory.")
+        exit()
+
+    if len(files) == 1:
         return files[0]
+
+    print("Available JSON files:")
+    for i, file in enumerate(files):
+        print(f"{i+1}. {file}")
+
+    while True:
+        try:
+            choice = int(input("Please enter the number of the JSON file you want to choose: "))
+            if 1 <= choice <= len(files):
+                return files[choice-1]
+            else:
+                print("Please enter a valid number.")
+        except ValueError:
+            print("Please enter a valid number.")
 
 
 # Function to load a pixels.json file
@@ -80,22 +115,6 @@ def write_to_json(pixels, new_pixel):
 
     print("\n> Pixel added to JSON file !\n")
 
-
-# Color functions
-def get_color_of_mood(mood: int):
-    # You can customize your palette here
-    if mood == 1:
-        return RED
-    elif mood == 2:
-        return RED
-    if mood == 3:
-        return YELLOW
-    elif mood == 4:
-        return GREEN
-    elif mood == 5:
-        return GREEN
-    else:
-        return BLUE
 
 
 def get_aviability(pixels, date: str) -> str:
@@ -268,21 +287,17 @@ class PixelEncoder(json.JSONEncoder):
 
 if __name__ == "__main__":
 
-    try:
-        pixels = load_pixels()
-    except Exception as exception:
-        print("No json file found.\nfull error :", exception)
-        exit()
+    pixels = load_pixels()
 
     ##########################
     #          MENU          #
     ##########################
 
     os.system('cls' if os.name == 'nt' else 'clear')
-    print(BOLD + "Welcome to Pixel Writer !" + RESET)
+    print(BOLD + " Welcome to YearInPixels PC !" + RESET)
 
     while True:
-        print('='*25)
+        print('='*30)
         print("1. Write a pixel")
         print("2. Search pixel by date")
         print("3. Search pixel by notes")
