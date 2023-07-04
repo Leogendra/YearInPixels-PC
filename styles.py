@@ -26,7 +26,7 @@ BG_WITHE = "\x1b[47m"  # Fond blanc
 
 
 
-# Color functions
+
 def get_color_of_mood(mood: int):
     # You can customize your palette here
     if mood == 1:
