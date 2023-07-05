@@ -254,35 +254,39 @@ def write_pixel(pixels):
     day_before_yesterday = datetime_to_string(datetime.now() - timedelta(days=2))
     date = today
 
-    print(UNDERLINE + "Choose the date" + RESET)
-    print(get_color_aviability(pixels, today) + f"default. today ({today})" + RESET)
-    print(get_color_aviability(pixels, yesterday) + "1. yesterday" + RESET)
-    print(get_color_aviability(pixels, day_before_yesterday) + "2. day before yesterday" + RESET)
-    print("3. manual")
-    choice = input("Your choice: ")
+    ready_to_write = False
+    while not ready_to_write:
+        print(UNDERLINE + "Choose the date" + RESET)
+        print(get_color_aviability(pixels, today) + f"default. today ({today})" + RESET)
+        print(get_color_aviability(pixels, yesterday) + "1. yesterday" + RESET)
+        print(get_color_aviability(pixels, day_before_yesterday) + "2. day before yesterday" + RESET)
+        print("3. manual")
+        choice = input("Your choice: ")
 
-    if choice == "1":
-        date = yesterday
-    elif choice == "2":
-        date = day_before_yesterday
-    elif choice == "3":
-        date = input("Date (YYYY-MM-DD, without trailing zeros): ")
-        while not(is_date_valid(date)):
-            date = input("Enter a valid date (YYYY-MM-DD, without trailing zeros): ")
+        ready_to_write = True
+        if choice == "1":
+            date = yesterday
+        elif choice == "2":
+            date = day_before_yesterday
+        elif choice == "3":
+            date = input("Date (YYYY-MM-DD): ")
+            while not(is_date_valid(date)):
+                date = input("Enter a valid date (YYYY-MM-DD): ")
 
-    if not get_aviability(pixels, date):
-        print(f"\n{UNDERLINE}The Pixel of this date already exists{RESET}")
-        print("Would you like to overwrite it ?")
-        choice = input("y/n: ")
-        if choice.lower() in ["y", "o", "yes", "oui", "1"]:
-            print("Pixel will be overwritten")
-        else:
-            return
+        if not get_aviability(pixels, date):
+            print(f"\n{UNDERLINE}The Pixel of this date already exists{RESET}")
+            print("Would you like to overwrite it ?")
+            choice = input("y/n: ")
+            if choice.lower() in ["y", "o", "yes", "oui", "1"]:
+                print("Pixel will be overwritten")
+            else:
+                ready_to_write = False
 
 
+    print()
     score = "0"
     while score not in ["1", "2", "3", "4", "5"]:
-        score = input(f"\nEnter your {UNDERLINE}mood{RESET} [1-5]: ")
+        score = input(f"Enter your {UNDERLINE}mood{RESET} [1-5]: ")
 
     print()
     notes = ""
@@ -318,7 +322,7 @@ class Pixel:
         date = f"Pixel Date: {UNDERLINE + self.date + RESET}"
         mood = f"Mood: {MOOD_COLOR}{self.score}{RESET}"
         notes = MOOD_COLOR + f"Notes: {self.notes}" + RESET if self.notes else "no notes"
-        tags = f"Tags: {self.tags}" if self.tags else "no tags"
+        tags = f"Tags: {', '.join(self.tags)}" if self.tags else "no tags"
         return f"{date}\n{mood}\n{notes}\n{tags}\n"
 
     def __repr__(self):
