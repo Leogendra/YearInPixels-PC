@@ -368,12 +368,10 @@ if __name__ == "__main__":
     while True:
         print('='*30)
         print("1. Write a pixel")
-        print("2. Search pixel by date")
-        print("3. Search pixel by notes")
-        print("4. Search pixel by mood")
-        print("5. Search pixel by tag")
-        print("6. Display pixels")
-        # print("7. Merge pixels files") # Not yet implemented
+        print("2. Search pixel")
+        print("3. Display pixels")
+        # print("4. Statistics") # Not yet implemented
+        # print("5. Merge pixels files") # Not yet implemented
         print("else. exit")
         choice_menu = input("Choice: ")
         print()
@@ -385,26 +383,34 @@ if __name__ == "__main__":
             
             print(new_pixel)
 
-        elif choice_menu in ["2", "3", "4", "5"]:
-            if choice_menu == "2":
+        elif choice_menu == "2":
+            print("1. Search by date")
+            print("2. Search by notes")
+            print("3. Search by mood")
+            print("4. Search by tag")
+            choice_search = input("Choice: ")
+            while choice_search not in ["1", "2", "3", "4"]:
+                choice_search = input("Enter a valid input: ")
+    
+            if choice_search == "1":
                 search_prompt = "Date to find (YYYY-MM-DD): "
-            elif choice_menu == "3":
+            elif choice_search == "2":
                 search_prompt = "Notes to find: "
                 search_func = search_pixel_by_notes
-            elif choice_menu == "4":
+            elif choice_search == "3":
                 search_prompt = "Mood to find [1-5]: "
                 search_func = search_pixel_by_mood
-            elif choice_menu == "5":
+            elif choice_search == "4":
                 search_prompt = "Tag to find: "
                 search_func = search_pixel_by_tag
 
             search_value = input(search_prompt)
 
-            if choice_menu == "2":
+            if choice_search == "1":
                 while not is_date_valid(search_value):
-                    search_value = input("Enter a valid input: ")
+                    search_value = input("Enter a valid date: ")
                 
-                print(search_pixel_by_date(pixels, search_value))
+                print(search_pixel_by_date(pixels, search_value.strip()))
 
             else:
                 try:
@@ -412,9 +418,9 @@ if __name__ == "__main__":
                 except ValueError:
                     number_of_pixels = 1
 
-                search_func(pixels, search_value, number_of_pixels)
+                search_func(pixels, search_value.strip(), number_of_pixels)
 
-        elif choice_menu == "6":
+        elif choice_menu == "3":
             print("1. Grid display")
             print("2. Calendar display") # Not yet implemented
             choice_display = input("Choice: ")

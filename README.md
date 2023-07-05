@@ -14,6 +14,9 @@ Enjoy!
 
 ### Additional Features
 - A warning will appear if you attempt to overwrite an existing pixel.
-- There are checks in place if you misspell a date.
 - You can customize your palette in the `get_color_of_mood` function (in styles.py, line 30).
 - Supports multiple JSON files in the directory.
+
+#### Upcoming Features
+- GUI
+- Merging multiple JSON files
