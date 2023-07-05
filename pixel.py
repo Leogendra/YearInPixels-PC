@@ -191,6 +191,7 @@ def get_color_aviability(pixels, date: str) -> str:
 ########################
 
 def search_pixel_by_date(pixels, search_date):
+    search_date = datetime_to_string(datetime.strptime(search_date, "%Y-%m-%d"))
     matching_pixels = []
     for pixel in pixels:
         if pixel.date == search_date:
@@ -382,8 +383,7 @@ if __name__ == "__main__":
 
         elif choice_menu in ["2", "3", "4", "5"]:
             if choice_menu == "2":
-                search_prompt = "Date to find (YYYY-MM-DD, without trailing zeros): "
-                search_func = search_pixel_by_date
+                search_prompt = "Date to find (YYYY-MM-DD): "
             elif choice_menu == "3":
                 search_prompt = "Notes to find: "
                 search_func = search_pixel_by_notes
@@ -396,15 +396,19 @@ if __name__ == "__main__":
 
             search_value = input(search_prompt)
 
-            while (choice_menu == "2") and (not is_date_valid(search_value)):
-                search_value = input("Enter a valid input: ")
+            if choice_menu == "2":
+                while not is_date_valid(search_value):
+                    search_value = input("Enter a valid input: ")
+                
+                print(search_pixel_by_date(pixels, search_value))
 
-            try:
-                number_of_pixels = int(input("Number of pixels: "))
-            except ValueError:
-                number_of_pixels = 1
+            else:
+                try:
+                    number_of_pixels = int(input("Number of pixels: "))
+                except ValueError:
+                    number_of_pixels = 1
 
-            search_func(pixels, search_value, number_of_pixels)
+                search_func(pixels, search_value, number_of_pixels)
 
         elif choice_menu == "6":
             print("1. Grid display")
