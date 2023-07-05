@@ -89,10 +89,9 @@ def load_pixels():
     return [Pixel(pixel=pixel) for pixel in pixels]
 
 
-def write_to_json(pixels, new_pixel):
+def write_to_json(pixels):
 
     pixel_file = find_pixel_file()
-    pixels.append(new_pixel)  # Add the new pixel to the list of pixels
 
     with open(pixel_file, 'w', encoding='utf-8') as file:
         json.dump(pixels, file, cls=PixelEncoder, ensure_ascii=False, indent=4)
@@ -369,6 +368,8 @@ def write_pixel(pixels):
             choice = input("y/n: ")
             if choice.lower() in ["y", "o", "yes", "oui", "1"]:
                 print("Pixel will be overwritten")
+                # remove the pixel from the list
+                pixels = [pixel for pixel in pixels if pixel.date != date]
             else:
                 ready_to_write = False
 
@@ -394,7 +395,11 @@ def write_pixel(pixels):
         if tag != "":
             tags.append(tag)
 
-    return Pixel(pixel={"date": date, "type": "Mood", "scores": [score], "notes": notes.strip(), "tags": tags})
+    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": [score], "notes": notes.strip(), "tags": tags})
+    pixels.append(new_pixel)
+    print(new_pixel)
+
+    return pixels
 
 
 class Pixel:
@@ -467,11 +472,9 @@ if __name__ == "__main__":
         print()
 
         if choice_menu == "1":
-            new_pixel = write_pixel(pixels)
+            pixels = write_pixel(pixels)
             
-            write_to_json(pixels, new_pixel)  # Write the updated pixels list to the JSON file
-            
-            print(new_pixel)
+            write_to_json(pixels)  # Write the updated pixels list to the JSON file
 
         elif choice_menu == "2":
             print("1. Search by date")
