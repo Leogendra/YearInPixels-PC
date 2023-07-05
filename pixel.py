@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from styles import *
 import glob
 import json
@@ -101,7 +101,40 @@ def merge_pixels_files():
 
 
 def display_pixels_month(pixels, number_to_display):
-    pass    
+    try:
+        number_to_display = int(number_to_display)
+        if (number_to_display < 1):
+            number_to_display = 1000
+    except ValueError:
+        number_to_display = 1000
+
+    pixels_to_display = pixels.copy()
+    pixels_to_display = pixels_to_display[-number_to_display:]
+
+    display_grid = {}
+
+    for pixel in pixels_to_display:
+        full_date = pixel.date.split("-")
+        year = int(full_date[0])
+        month = int(full_date[1])
+        day = int(full_date[2])
+        dt = date(year, month, day)
+        week_number = dt.isocalendar()[1]
+        if display_grid.get((year, week_number)) is None:
+            display_grid[(year, week_number)] = [0] * 7
+        display_grid[(year, week_number)][dt.weekday()] = get_color_of_mood(pixel.score)
+
+    # display the grid
+    weeks_sorted = sorted(display_grid.keys())
+
+    for week in weeks_sorted:
+        days = display_grid[week]
+        for day in days:
+            if day == 0:
+                print("  ", end='')
+            else:
+                print(day + PIXEL_CHAR + RESET, end='')
+        print()
 
 
 def display_pixels_year(pixels, number_to_display):
@@ -122,9 +155,9 @@ def display_pixels_year(pixels, number_to_display):
         year = date[0]
         month = date[1]
         day = date[2]
-        if display_grid.get(year+'-'+month) is None:
-            display_grid[year+'-'+month] = [0] * 31
-        display_grid[year+'-'+month][int(day)-1] = get_color_of_mood(pixel.score)
+        if display_grid.get((year, month)) is None:
+            display_grid[(year, month)] = [0] * 31
+        display_grid[(year, month)][int(day)-1] = get_color_of_mood(pixel.score)
 
     # display the grid
     months_sorted = sorted(display_grid.keys())
@@ -135,7 +168,7 @@ def display_pixels_year(pixels, number_to_display):
             if day == 0:
                 print("  ", end='')
             else:
-                print(day + "██" + RESET, end='')
+                print(day + PIXEL_CHAR + RESET, end='')
         print()
 
 
@@ -375,7 +408,7 @@ if __name__ == "__main__":
 
         elif choice_menu == "6":
             print("1. Grid display")
-            # print("2. Calendar display") # Not yet implemented
+            print("2. Calendar display") # Not yet implemented
             choice_display = input("Choice: ")
             number_to_display = input("Number of pixels to display: ")
 
