@@ -24,8 +24,8 @@ BG_MAGENTA = "\x1b[45m"  # Fond magenta
 BG_CYAN = "\x1b[46m"  # Fond cyan
 BG_WITHE = "\x1b[47m"  # Fond blanc
 
-
-
+# You can use : ◼, █, ▓, ■, ▪, ▬, ▮, ▰, ◉, ◍
+PIXEL_CHAR = "◼"
 
 def get_color_of_mood(mood: int):
     # You can customize your palette here
