@@ -118,13 +118,25 @@ def display_pixels_year(pixels, number_to_display):
     display_grid = {}
 
     for pixel in pixels_to_display:
-        date = pixel.date
-        month = date.split("-")[1]
-        year = date.split("-")[0]
-        if display_grid[year+'-'+month] == None:
-            display_grid[year+'-'+month] = []
-        display_grid[year+'-'+month].append(get_color_of_mood(pixel.score) + "██" + RESET)
+        date = pixel.date.split("-")
+        year = date[0]
+        month = date[1]
+        day = date[2]
+        if display_grid.get(year+'-'+month) is None:
+            display_grid[year+'-'+month] = [0] * 31
+        display_grid[year+'-'+month][int(day)-1] = get_color_of_mood(pixel.score)
 
+    # display the grid
+    months_sorted = sorted(display_grid.keys())
+
+    for month in months_sorted:
+        days = display_grid[month]
+        for day in days:
+            if day == 0:
+                print("  ", end='')
+            else:
+                print(day + "██" + RESET, end='')
+        print()
 
 
 ######################
@@ -322,6 +334,8 @@ if __name__ == "__main__":
         print("3. Search pixel by notes")
         print("4. Search pixel by mood")
         print("5. Search pixel by tag")
+        print("6. Display pixels")
+        # print("7. Merge pixels files") # Not yet implemented
         print("else. exit")
         choice_menu = input("Choice: ")
         print()
@@ -358,6 +372,17 @@ if __name__ == "__main__":
                 number_of_pixels = 1
 
             search_func(pixels, search_value, number_of_pixels)
+
+        elif choice_menu == "6":
+            print("1. Grid display")
+            # print("2. Calendar display") # Not yet implemented
+            choice_display = input("Choice: ")
+            number_to_display = input("Number of pixels to display: ")
+
+            if choice_display == "2":
+                display_pixels_month(pixels, number_to_display)
+            else:
+                display_pixels_year(pixels, number_to_display)
 
         else:
             print("Have a nice day !")
