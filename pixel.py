@@ -52,7 +52,15 @@ def find_pixel_file():
 
     if not files:
         print("No JSON file found in current directory.")
-        exit()
+        choice = input("Do you want to create a new JSON file ? (y/n): ")
+        if choice.lower() in ["y", "o", "yes", "oui", "1"]:
+            pixel_file = "PIXELS-BACKUP-" + datetime_to_string(datetime.now()) + ".json"
+            with open(pixel_file, 'w', encoding='utf-8') as file:
+                json.dump([], file, ensure_ascii=False, indent=4)
+            print(f"\n> JSON file created !\n")
+            return pixel_file
+        else:
+            exit()
 
     if len(files) == 1:
         return files[0]
@@ -93,7 +101,89 @@ def write_to_json(pixels, new_pixel):
 
 
 def merge_pixels_files():
-    pass
+    pattern = "*.json"
+    files = glob.glob(pattern)
+    if len(files) < 2:
+        print("Not enough JSON files to merge.")
+        return
+    
+    print("Select the first JSON file:")
+    to_merge_1 = find_pixel_file()
+
+    print("Select the second JSON file:")
+    to_merge_2 = find_pixel_file()
+    while to_merge_2 == to_merge_1:
+        print("You can't merge a file to itself.")
+        to_merge_2 = find_pixel_file()
+
+    # Load the pixels from the 'to_merge_1' file
+    with open(to_merge_1, 'r') as from_file:
+        pixels_1 = json.load(from_file)
+
+    # Load the pixels from the 'to_merge_2' file
+    with open(to_merge_2, 'r') as to_file:
+        pixels_2 = json.load(to_file)
+
+    # Convert pixel lists to sets for easy comparison
+    dates_in_list1 = {pixel.date for pixel in pixels_1}
+    dates_in_list2 = {pixel.date for pixel in pixels_2}
+
+    conflicts = []
+    for date1 in dates_in_list1:
+        if date1 in dates_in_list2:
+            conflicts.append((search_pixel_by_date(pixels_1, date1), search_pixel_by_date(pixels_2, date1)))
+
+    if not conflicts:
+        print(">No conflicts found. Merging files...")
+        merged_pixels = pixels_1 + pixels_2
+    else:
+        pixels_dict_1 = {pixel.date: pixel for pixel in pixels_1}
+        pixels_dict_2 = {pixel.date: pixel for pixel in pixels_2}
+
+        print("Conflicts found. Please choose how to handle them:")
+        print("1. Keep all pixels of the first file.")
+        print("2. Keep all pixels of the second file.")
+        print("3. Handle conflicts individually.")
+
+        choice = input("Your choice: ")
+        if choice == "1":
+            merged_dict = {**pixels_dict_1, **pixels_dict_2}
+            merged_pixels = list(merged_dict.values())
+        elif choice == "2":
+            merged_dict = {**pixels_dict_2, **pixels_dict_1}
+            merged_pixels = list(merged_dict.values())
+        elif choice == "3":
+            for pixel_1, pixel_2 in conflicts:
+                print("Conflict:")
+                print("Pixel from file 1:", pixel_1)
+                print("Pixel from file 2:", pixel_2)
+                print("1. Keep the pixel of the first file.")
+                print("2. Keep the pixel of the second file.")
+
+                conflict_choice = input("Your choice: ")                
+                
+                if conflict_choice == "1":
+                    merged_dict[pixel_1.date] = pixel_1
+                    print("Kept the pixel of the first file.")
+                elif conflict_choice == "2":
+                    merged_dict[pixel_2.date] = pixel_2
+                    print("Kept the pixel of the second file.")
+
+            # Remove conflicts from the first and second pixel dictionaries
+            for date in conflicts:
+                pixels_dict_1.pop(date, None)
+                pixels_dict_2.pop(date, None)
+
+            # Merge all pixels with the resolved conflicts
+            merged_dict = {**merged_dict, **pixels_dict_1, **pixels_dict_2}
+            merged_pixels = list(merged_dict.values())
+
+    # Write the merged pixels to the destination file
+    with open(to_merge_2, 'w') as merged_file:
+        json.dump(merged_pixels, merged_file)
+
+    print(">Merge completed.")
+
 
 #####################
 #      Display      #
@@ -108,12 +198,12 @@ def display_pixels_month(pixels, number_to_display):
     except ValueError:
         number_to_display = 1000
 
-    pixels_to_display = pixels.copy()
-    pixels_to_display = pixels_to_display[-number_to_display:]
+    pixels_2_display = pixels.copy()
+    pixels_2_display = pixels_2_display[-number_to_display:]
 
     display_grid = {}
 
-    for pixel in pixels_to_display:
+    for pixel in pixels_2_display:
         full_date = pixel.date.split("-")
         year = int(full_date[0])
         month = int(full_date[1])
@@ -145,12 +235,12 @@ def display_pixels_year(pixels, number_to_display):
     except ValueError:
         number_to_display = 1000
 
-    pixels_to_display = pixels.copy()
-    pixels_to_display[-number_to_display:]
+    pixels_2_display = pixels.copy()
+    pixels_2_display[-number_to_display:]
 
     display_grid = {}
 
-    for pixel in pixels_to_display:
+    for pixel in pixels_2_display:
         date = pixel.date.split("-")
         year = date[0]
         month = date[1]
