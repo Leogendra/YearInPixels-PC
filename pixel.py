@@ -657,8 +657,8 @@ if __name__ == "__main__":
 
         elif choice_menu == "9":
             print("YearInPixels PC")
-            print("Version 1.3")
-            print("Inspired by an original idea from @nueses_ on Discord.")
+            print("Version 1.3.1")
+            print("Inspired by an original app 'Year In Pixels' from Teovogel.")
             print("Check out the repository for the PC version here: https://github.com/Leogendra/YearInPixels-PC")
             print("Feel free to contribute or report bugs !")
 

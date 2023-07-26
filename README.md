@@ -1,4 +1,4 @@
-# YearInPixels-PC
+# YearInPixels-PC v1.3.1
 
 A script for writing pixels on your computer and importing the file back through your phone.
 
