@@ -106,82 +106,49 @@ def merge_pixels_files():
         print("Not enough JSON files to merge.")
         return
     
-    print("Select the first JSON file:")
-    to_merge_1 = find_pixel_file()
+    # print("Select the first JSON file:")
+    # to_merge_1 = find_pixel_file()
 
-    print("Select the second JSON file:")
-    to_merge_2 = find_pixel_file()
-    while to_merge_2 == to_merge_1:
-        print("You can't merge a file to itself.")
-        to_merge_2 = find_pixel_file()
+    # print("Select the second JSON file:")
+    # to_merge_2 = find_pixel_file()
+    # while to_merge_2 == to_merge_1:
+    #     print("You can't merge a file to itself.")
+    #     to_merge_2 = find_pixel_file()
 
-    # Load the pixels from the 'to_merge_1' file
-    with open(to_merge_1, 'r') as from_file:
-        pixels_1 = json.load(from_file)
+    # # Load the pixels from the 'to_merge_1' file
+    # with open(to_merge_1, 'r') as from_file:
+    #     pixels_1 = json.load(from_file)
 
-    # Load the pixels from the 'to_merge_2' file
-    with open(to_merge_2, 'r') as to_file:
-        pixels_2 = json.load(to_file)
+    # # Load the pixels from the 'to_merge_2' file
+    # with open(to_merge_2, 'r') as to_file:
+    #     pixels_2 = json.load(to_file)
 
-    # Convert pixel lists to sets for easy comparison
-    dates_in_list1 = {pixel.date for pixel in pixels_1}
-    dates_in_list2 = {pixel.date for pixel in pixels_2}
+    # # Convert pixel lists to sets for easy comparison
+    # dates_in_list1 = {pixel.date for pixel in pixels_1}
+    # dates_in_list2 = {pixel.date for pixel in pixels_2}
 
-    conflicts = []
-    for date1 in dates_in_list1:
-        if date1 in dates_in_list2:
-            conflicts.append((search_pixel_by_date(pixels_1, date1), search_pixel_by_date(pixels_2, date1)))
+    # conflicts = []
+    # for date1 in dates_in_list1:
+    #     if date1 in dates_in_list2:
+    #         conflicts.append((search_pixel_by_date(pixels_1, date1), search_pixel_by_date(pixels_2, date1)))
 
-    if not conflicts:
-        print(">No conflicts found. Merging files...")
-        merged_pixels = pixels_1 + pixels_2
-    else:
-        pixels_dict_1 = {pixel.date: pixel for pixel in pixels_1}
-        pixels_dict_2 = {pixel.date: pixel for pixel in pixels_2}
+    # if not conflicts:
+    #     print(">No conflicts found. Merging files...")
+    #     merged_pixels = pixels_1 + pixels_2
+    # else:
+    #     pixels_dict_1 = {pixel.date: pixel for pixel in pixels_1}
+    #     pixels_dict_2 = {pixel.date: pixel for pixel in pixels_2}
 
-        print("Conflicts found. Please choose how to handle them:")
-        print("1. Keep all pixels of the first file.")
-        print("2. Keep all pixels of the second file.")
-        print("3. Handle conflicts individually.")
+    #     print("Conflicts found. Please choose how to handle them:")
+    #     print("1. Keep all pixels of the first file.")
+    #     print("2. Keep all pixels of the second file.")
+    #     print("3. Handle conflicts individually.")
 
-        choice = input("Your choice: ")
-        if choice == "1":
-            merged_dict = {**pixels_dict_1, **pixels_dict_2}
-            merged_pixels = list(merged_dict.values())
-        elif choice == "2":
-            merged_dict = {**pixels_dict_2, **pixels_dict_1}
-            merged_pixels = list(merged_dict.values())
-        elif choice == "3":
-            for pixel_1, pixel_2 in conflicts:
-                print("Conflict:")
-                print("Pixel from file 1:", pixel_1)
-                print("Pixel from file 2:", pixel_2)
-                print("1. Keep the pixel of the first file.")
-                print("2. Keep the pixel of the second file.")
+    #     conflict_strategy = input("Your choice: ")
+    #     while conflict_strategy not in ["1", "2", "3"]:
+    #         conflict_strategy = input("Enter a valid input: ")
 
-                conflict_choice = input("Your choice: ")                
-                
-                if conflict_choice == "1":
-                    merged_dict[pixel_1.date] = pixel_1
-                    print("Kept the pixel of the first file.")
-                elif conflict_choice == "2":
-                    merged_dict[pixel_2.date] = pixel_2
-                    print("Kept the pixel of the second file.")
-
-            # Remove conflicts from the first and second pixel dictionaries
-            for date in conflicts:
-                pixels_dict_1.pop(date, None)
-                pixels_dict_2.pop(date, None)
-
-            # Merge all pixels with the resolved conflicts
-            merged_dict = {**merged_dict, **pixels_dict_1, **pixels_dict_2}
-            merged_pixels = list(merged_dict.values())
-
-    # Write the merged pixels to the destination file
-    with open(to_merge_2, 'w') as merged_file:
-        json.dump(merged_pixels, merged_file)
-
-    print(">Merge completed.")
+    # print(">Merge completed.")
 
 
 #####################
@@ -193,9 +160,9 @@ def display_pixels_month(pixels, number_to_display):
     try:
         number_to_display = int(number_to_display)
         if (number_to_display < 1):
-            number_to_display = 1000
+            number_to_display = len(pixels)
     except ValueError:
-        number_to_display = 1000
+        number_to_display = len(pixels)
 
     pixels_2_display = pixels.copy()
     pixels_2_display = pixels_2_display[-number_to_display:]
@@ -230,12 +197,12 @@ def display_pixels_year(pixels, number_to_display):
     try:
         number_to_display = int(number_to_display)
         if (number_to_display < 1):
-            number_to_display = 1000
+            number_to_display = len(pixels)
     except ValueError:
-        number_to_display = 1000
+        number_to_display = len(pixels)
 
     pixels_2_display = pixels.copy()
-    pixels_2_display[-number_to_display:]
+    pixels_2_display = pixels_2_display[-number_to_display:]
 
     display_grid = {}
 
@@ -259,6 +226,164 @@ def display_pixels_year(pixels, number_to_display):
             else:
                 print(day + PIXEL_CHAR + RESET, end='')
         print()
+
+
+
+def display_statistics(pixels, number_of_words):
+    try:
+        number_of_words = int(number_of_words)
+        if (number_of_words < 1):
+            number_of_words = 5
+    except ValueError:
+        number_of_words = 5
+
+    pixels_stats = pixels.copy()
+    pixels_stats = sorted(pixels_stats, key=lambda pixel: datetime.strptime(pixel.date, "%Y-%m-%d"), reverse=True)
+
+
+    print(UNDERLINE + "\nGeneral statistics:" + RESET)
+    dates = [datetime.strptime(pixel.date, "%Y-%m-%d") for pixel in pixels_stats]
+    longest_streak = 1
+    last_streak = 1
+    for i in range(1, len(dates)):
+        if dates[i-1] == dates[i] + timedelta(days=1):
+            last_streak += 1
+        else:
+            last_streak = 0
+
+        if last_streak > longest_streak:
+            longest_streak = last_streak
+
+    totals_days = (dates[0] - dates[-1]).days + 1
+    days_missed = totals_days - len(pixels_stats)
+
+    print(f"Number of pixels: {len(pixels_stats)}")
+    print(f"First pixel: {pixels_stats[-1].date}")
+    print(f"Longest streak: {longest_streak}")
+    print(f"Current streak: {last_streak}")
+    print(f"Number of pixels missed since the first pixel: {days_missed} ({days_missed/totals_days*100:.2f}%)")
+
+
+    print(UNDERLINE + "\nMood statistics:" + RESET)
+    moods_occurence = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
+    avg_mood = 0
+    avg_mood_7 = 0
+    avg_mood_30 = 0
+    avg_mood_365 = 0
+
+    for i, pixel in enumerate(pixels_stats):
+        mood = pixel.score
+        moods_occurence[str(mood)] += 1
+        if i < 7:
+            avg_mood_7 += mood
+        if i < 30:
+            avg_mood_30 += mood
+        if i < 365:
+            avg_mood_365 += mood
+        avg_mood += mood
+
+    avg_mood = round(avg_mood / len(pixels_stats), 2)
+    avg_mood_7 = round(avg_mood_7 / min(len(pixels_stats), 7), 2)
+    avg_mood_30 = round(avg_mood_30 / min(len(pixels_stats), 30), 2)
+    avg_mood_365 = round(avg_mood_365 / min(len(pixels_stats), 365), 2)
+
+    for mood in range(1, 6):
+        MOOD_COLOR = get_color_of_mood(mood)
+        print(MOOD_COLOR + f" {mood}: {moods_occurence[str(mood)]}" + RESET)
+
+    print(f"Average mood ({len(pixels_stats)} days): {avg_mood}")
+    print(f"Average mood of the last 7 days: {avg_mood_7}")
+    print(f"Average mood of the last 30 days: {avg_mood_30}")
+    print(f"Average mood of the last 365 days: {avg_mood_365}")
+    
+
+    print(UNDERLINE + "\nNotes statistics:" + RESET)
+    top_words = {}
+    top_words_7 = {}
+    top_words_30 = {}
+    top_words_365 = {}
+
+    for i, pixel in enumerate(pixels_stats):
+        current_words = set()
+        note = pixel.notes
+        for word in note.split():
+            if sum(1 for char in word if char.isalpha()) >= 3:
+                cleaned_word = ''.join(char for char in word if char.isalnum())
+                current_words.add(cleaned_word)
+        for word in current_words:
+            for word_key in top_words.keys():
+                if word_key.lower() == word.lower():
+                    word = word_key
+                    break
+            top_words[word] = top_words.get(word, 0) + 1
+            if i < 7:
+                top_words_7[word] = top_words_7.get(word, 0) + 1
+            if i < 30:
+                top_words_30[word] = top_words_30.get(word, 0) + 1
+            if i < 365:
+                top_words_365[word] = top_words_365.get(word, 0) + 1
+        
+    print(f"Top {number_of_words} words:")
+    for word, count in sorted(top_words.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
+        print(f" - {word} : {count} ({100 * count / len(pixels_stats):.2f}%)")
+
+    if (len(top_words_7) > 0) and (len(top_words_7) != len(top_words)):
+        print(f"Top {number_of_words} words of the last 7 days:")
+        for word, count in sorted(top_words_7.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
+            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)")
+
+    if (len(top_words_30) > 0) and (len(top_words_30) != len(top_words_7)):
+        print(f"Top {number_of_words} words of the last 30 days:")
+        for word, count in sorted(top_words_30.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
+            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)")
+
+    if (len(top_words_365) > 0) and (len(top_words_365) != len(top_words_30)):
+        print(f"Top {number_of_words} words of the last 365 days:")
+        for word, count in sorted(top_words_365.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
+            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)")
+
+
+    print(UNDERLINE + "\nTags statistics:" + RESET)
+    top_tags = {}
+    top_tags_7 = {}
+    top_tags_30 = {}
+    top_tags_365 = {}
+
+    for i, pixel in enumerate(pixels_stats):
+        for tag in pixel.tags:
+            for tag_key in top_tags.keys():
+                if tag_key.lower() == tag.lower():
+                    tag = tag_key
+                    break
+            top_tags[tag] = top_tags.get(tag, 0) + 1
+            if i < 7:
+                top_tags_7[tag] = top_tags_7.get(tag, 0) + 1
+            if i < 30:
+                top_tags_30[tag] = top_tags_30.get(tag, 0) + 1
+            if i < 365:
+                top_tags_365[tag] = top_tags_365.get(tag, 0) + 1
+
+    number_of_tags = 5
+    print(f"Top {number_of_tags} tags:")
+    for tag, count in sorted(top_tags.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
+        print(f" - {tag} : {count} ({100 * count / len(pixels_stats):.1f}%)")
+
+    if (len(top_tags_7) > 0) and (len(top_tags_7) != len(top_tags)):
+        print(f"Top {number_of_tags} tags of the last 7 days:")
+        for tag, count in sorted(top_tags_7.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
+            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)")
+
+    if (len(top_tags_30) > 0) and (len(top_tags_30) != len(top_tags_7)):
+        print(f"Top {number_of_tags} tags of the last 30 days:")
+        for tag, count in sorted(top_tags_30.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
+            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)")
+
+    if (len(top_tags_365) > 0) and (len(top_tags_365) != len(top_tags_30)):
+        print(f"Top {number_of_tags} tags of the last 365 days:")
+        for tag, count in sorted(top_tags_365.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
+            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)")
+
+    print("\n\n")
 
 
 ######################
@@ -410,7 +535,7 @@ class Pixel:
         # self.scores = pixel["scores"] # Not yet implemented
         self.score = pixel["scores"][0]
         self.notes = pixel["notes"]
-        self.tags = pixel["tags"]
+        self.tags = pixel["tags"][0]["entries"] if pixel["tags"] else []
 
     def __str__(self):
         MOOD_COLOR = get_color_of_mood(self.score)
@@ -465,9 +590,10 @@ if __name__ == "__main__":
         print("1. Write a pixel")
         print("2. Search pixel")
         print("3. Display pixels")
-        # print("4. Statistics") # Not yet implemented
+        print("4. Statistics")
         # print("5. Merge pixels files") # Not yet implemented
-        print("else. exit")
+        print("9. About/infos")
+        print("other. exit")
         choice_menu = input("Choice: ")
         print()
 
@@ -514,15 +640,33 @@ if __name__ == "__main__":
                 search_func(pixels, search_value.strip(), number_of_pixels)
 
         elif choice_menu == "3":
+            """
             print("1. Grid display")
-            print("2. Calendar display") # Not yet implemented
+            # print("2. Calendar display") # Not yet implemented
             choice_display = input("Choice: ")
+            """
             number_to_display = input("Number of pixels to display: ")
+            display_pixels_year(pixels, number_to_display)
 
-            if choice_display == "2":
-                display_pixels_month(pixels, number_to_display)
-            else:
-                display_pixels_year(pixels, number_to_display)
+        elif choice_menu == "4":
+            number_to_display = input("Number of words to display (notes): ")
+            display_statistics(pixels, number_to_display)
+
+        elif choice_menu == "5":
+            merge_pixels_files()
+
+        elif choice_menu == "9":
+            print("YearInPixels PC")
+            print("Version 1.3")
+            print("Inspired by an original idea from @nueses_ on Discord.")
+            print("Check out the repository for the PC version here: https://github.com/Leogendra/YearInPixels-PC")
+            print("Feel free to contribute or report bugs !")
+
+            print("\nUseful informations:")
+            print("This program is optimised for fast use, if you don't choose a number in a list, it will take the first value by default.")
+            print("You can customize your palette in the styles.py file.")
+
+
 
         else:
             print("Have a nice day !")

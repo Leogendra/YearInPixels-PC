@@ -1,23 +1,9 @@
-# Byte-compiled / optimized / DLL files
+# cache
 __pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
 
 # virtual environment
 venv/
 
 # private data
 *.json
-
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-src/pixelsparser.egg-info/
+test.py
