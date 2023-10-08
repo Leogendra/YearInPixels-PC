@@ -178,7 +178,7 @@ def display_pixels_month(pixels, number_to_display):
         week_number = dt.isocalendar()[1]
         if display_grid.get((year, week_number)) is None:
             display_grid[(year, week_number)] = [0] * 7
-        display_grid[(year, week_number)][dt.weekday()] = get_color_of_mood(pixel.score)
+        display_grid[(year, week_number)][dt.weekday()] = get_color_of_mood(pixel.scores)
 
     # display the grid
     weeks_sorted = sorted(display_grid.keys())
@@ -213,7 +213,7 @@ def display_pixels_year(pixels, number_to_display):
         day = date[2]
         if display_grid.get((year, month)) is None:
             display_grid[(year, month)] = [0] * 31
-        display_grid[(year, month)][int(day)-1] = get_color_of_mood(pixel.score)
+        display_grid[(year, month)][int(day)-1] = get_color_of_mood(pixel.scores)
 
     # display the grid
     months_sorted = sorted(display_grid.keys())
@@ -272,8 +272,10 @@ def display_statistics(pixels, number_of_words):
     avg_mood_365 = 0
 
     for i, pixel in enumerate(pixels_stats):
-        mood = pixel.score
-        moods_occurence[str(mood)] += 1
+        for pix in pixel.scores:
+            moods_occurence[str(pix)] += 1
+
+        mood = sum(int(pix) for pix in pixel.scores) / len(pixel.scores)
         if i < 7:
             avg_mood_7 += mood
         if i < 30:
@@ -288,7 +290,7 @@ def display_statistics(pixels, number_of_words):
     avg_mood_365 = round(avg_mood_365 / min(len(pixels_stats), 365), 2)
 
     for mood in range(1, 6):
-        MOOD_COLOR = get_color_of_mood(mood)
+        MOOD_COLOR = get_color_of_mood([mood])
         print(MOOD_COLOR + f" {mood}: {moods_occurence[str(mood)]}" + RESET)
 
     print(f"Average mood ({len(pixels_stats)} days): {avg_mood}")
@@ -303,18 +305,21 @@ def display_statistics(pixels, number_of_words):
     top_words_30 = {}
     top_words_365 = {}
 
+    excluded_words = open("excluded_words.txt", "r").read().split("\n")
+    excluded_words = [format_text(word) for word in excluded_words if word != ""]
+
     for i, pixel in enumerate(pixels_stats):
         current_words = set()
         note = pixel.notes
         for word in note.split():
-            if sum(1 for char in word if char.isalpha()) >= 3:
-                cleaned_word = ''.join(char for char in word if char.isalnum())
-                current_words.add(cleaned_word)
+            cleaned_word = ''.join(char for char in word if char.isalpha())
+            if len(cleaned_word) >= 3:
+                cleaned_word = format_text(cleaned_word)
+                if cleaned_word not in excluded_words:
+                    current_words.add(cleaned_word)
+
         for word in current_words:
-            for word_key in top_words.keys():
-                if word_key.lower() == word.lower():
-                    word = word_key
-                    break
+
             top_words[word] = top_words.get(word, 0) + 1
             if i < 7:
                 top_words_7[word] = top_words_7.get(word, 0) + 1
@@ -419,7 +424,7 @@ def search_pixel_by_date(pixels, search_date):
 def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
     matching_pixels = []
     for pixel in pixels:
-        if str(pixel.score) == str(search_mood):
+        if any(str(p) == str(search_mood) for p in pixel.scores):
             matching_pixels.append(pixel)
     if len(matching_pixels) > 0:
         print(f"{len(matching_pixels)} pixels found")
@@ -500,9 +505,9 @@ def write_pixel(pixels):
 
 
     print()
-    score = "0"
-    while score not in ["1", "2", "3", "4", "5"]:
-        score = input(f"Enter your {UNDERLINE}mood{RESET} [1-5]: ")
+    scores = ["0"]
+    while any(score not in ["1", "2", "3", "4", "5"] for score in scores):
+        scores = input(f"Enter your {UNDERLINE}mood{RESET} [1-5] (use SPACE for sub-pixels): ").split(" ")
 
     print()
     notes = ""
@@ -520,7 +525,7 @@ def write_pixel(pixels):
         if tag != "":
             tags.append(tag)
 
-    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": [score], "notes": notes.strip(), "tags": tags})
+    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": scores, "notes": notes.strip(), "tags": tags})
     pixels.append(new_pixel)
     print(new_pixel)
 
@@ -532,15 +537,15 @@ class Pixel:
     def __init__(self, pixel: dict = None):
         self.date = pixel["date"]
         self.pixel_type = pixel["type"]
-        # self.scores = pixel["scores"] # Not yet implemented
-        self.score = pixel["scores"][0]
+        self.scores = pixel["scores"]
+        # self.score = pixel["scores"][0] # old version
         self.notes = pixel["notes"]
         self.tags = pixel["tags"][0]["entries"] if pixel["tags"] else []
 
     def __str__(self):
-        MOOD_COLOR = get_color_of_mood(self.score)
+        MOOD_COLOR = get_color_of_mood(self.scores[0]) # doesn't take subpixels into account
         date = f"Pixel Date: {UNDERLINE + self.date + RESET}"
-        mood = f"Mood: {MOOD_COLOR}{self.score}{RESET}"
+        mood = f"Mood: {MOOD_COLOR}{', '.join(self.scores)}{RESET}"
         notes = MOOD_COLOR + f"Notes: {self.notes}" + RESET if self.notes else "no notes"
         tags = f"Tags: {', '.join(self.tags)}" if self.tags else "no tags"
         return f"{date}\n{mood}\n{notes}\n{tags}\n"
@@ -561,9 +566,12 @@ class PixelEncoder(json.JSONEncoder):
             encoded_pixel = {
                 "date": obj.date,
                 "type": obj.pixel_type,
-                "scores": [int(obj.score)],
+                "scores": list(map(int, obj.scores)),
                 "notes": obj.notes,
-                "tags": obj.tags
+                "tags": [{
+                    "type": "Emotions",
+                    "entries": obj.tags
+                }]
             }
             return encoded_pixel
         return super().default(obj)
@@ -664,7 +672,8 @@ if __name__ == "__main__":
 
             print("\nUseful informations:")
             print("This program is optimised for fast use, if you don't choose a number in a list, it will take the first value by default.")
-            print("You can customize your palette in the styles.py file.")
+            print("Use the exclude_words.txt file to exclude words from the statistics.")
+            print("You can alse customize your palette in the styles.py file.")
 
 
 

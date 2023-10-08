@@ -27,8 +27,8 @@ BG_WITHE = "\x1b[47m"  # Fond blanc
 # You can use : ◼, █, ▓, ■, ▪, ▬, ▮, ▰, ◉, ◍
 PIXEL_CHAR = "◼"
 
-def get_color_of_mood(mood):
-    mood = str(mood)
+def get_color_of_mood(scores):
+    mood = str(scores[0]) # We take the first score
     # You can customize your palette here
     if mood == "1":
         return RED
