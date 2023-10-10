@@ -32,9 +32,9 @@ def format_text(text):
         'i': ['î', 'ï'],
         'u': ['ù', 'ü', 'û'],
         'o': ['ô', 'ö'],
-        '': [' ', '-', '_', '\'', '(', ')', '"']
+        '': ['\'', '(', ')', '"']
     }
-    text = text.lower()
+    text = text.strip().lower()
     for (char, special_chars) in accents.items():
         for special in special_chars:
             text = text.replace(special, char)
@@ -113,6 +113,8 @@ def merge_pixels_files():
     if len(files) < 2:
         print("Not enough JSON files to merge.")
         return
+    
+    print("Not yet implemented.")
     
     # print("Select the first JSON file:")
     # to_merge_1 = find_pixel_file()
@@ -323,7 +325,7 @@ def display_statistics(pixels, number_of_words):
     top_words = {}
     top_words_7 = {}
     top_words_30 = {}
-    top_words_365 = {}
+    top_words_by_year = [{} for _ in range(10)]
 
     excluded_words = open("excluded_words.txt", "r").read().split("\n")
     excluded_words = [format_text(word) for word in excluded_words if word != ""]
@@ -345,34 +347,35 @@ def display_statistics(pixels, number_of_words):
                 top_words_7[word] = top_words_7.get(word, 0) + 1
             if i < 30:
                 top_words_30[word] = top_words_30.get(word, 0) + 1
-            if i < 365:
-                top_words_365[word] = top_words_365.get(word, 0) + 1
+            if i < 3650:
+                top_words_by_year[i//365][word] = top_words_by_year[i//365].get(word, 0) + 1
         
 
-    print_and_write(f"Top {number_of_words} words:", file_path)
+    print_and_write(f"Top {number_of_words} words of all time:", file_path)
     for word, count in sorted(top_words.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-        print_and_write(f" - {word} : {count} ({100 * count / len(pixels_stats):.2f}%)", file_path)
+        print_and_write(f" - {word.capitalize()} : {count} ({100 * count / len(pixels_stats):.2f}%)", file_path)
 
     if (len(top_words_7) > 0) and (len(top_words_7) != len(top_words)):
         print_and_write(f"Top {number_of_words} words of the last 7 days:", file_path)
         for word, count in sorted(top_words_7.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
+            print_and_write(f" - {word.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
 
-    if (len(top_words_30) > 0) and (len(top_words_30) != len(top_words_7)):
+    if (len(top_words_30) > 7) and (len(top_words_30) != len(top_words)):
         print_and_write(f"Top {number_of_words} words of the last 30 days:", file_path)
         for word, count in sorted(top_words_30.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
+            print_and_write(f" - {word.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
 
-    if (len(top_words_365) > 0) and (len(top_words_365) != len(top_words_30)):
-        print_and_write(f"Top {number_of_words} words of the last 365 days:", file_path)
-        for word, count in sorted(top_words_365.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
+    for i, top_words_year in enumerate(top_words_by_year):
+        if (len(top_words_year) > 0) and (i != 0 or len(top_words_year) != len(top_words)):
+            print_and_write(f"Top {number_of_words} words of the year{f'-{i}' if i != 0 else ''}:", file_path)
+            for word, count in sorted(top_words_year.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
+                print_and_write(f" - {word.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
 
     print_and_write("\nTags statistics:", file_path, UNDERLINE)
     top_tags = {}
     top_tags_7 = {}
     top_tags_30 = {}
-    top_tags_365 = {}
+    top_tags_by_year = [{} for _ in range(10)]
 
     for i, pixel in enumerate(pixels_stats):
         for tag in pixel.tags:
@@ -385,28 +388,29 @@ def display_statistics(pixels, number_of_words):
                 top_tags_7[tag] = top_tags_7.get(tag, 0) + 1
             if i < 30:
                 top_tags_30[tag] = top_tags_30.get(tag, 0) + 1
-            if i < 365:
-                top_tags_365[tag] = top_tags_365.get(tag, 0) + 1
+            if i < 3650:
+                top_tags_by_year[i//365][tag] = top_tags_by_year[i//365].get(tag, 0) + 1
 
     number_of_tags = 5
     print_and_write(f"Top {number_of_tags} tags:", file_path)
     for tag, count in sorted(top_tags.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-        print_and_write(f" - {tag} : {count} ({100 * count / len(pixels_stats):.1f}%)", file_path)
+        print_and_write(f" - {tag.capitalize()} : {count} ({100 * count / len(pixels_stats):.1f}%)", file_path)
 
     if (len(top_tags_7) > 0) and (len(top_tags_7) != len(top_tags)):
         print_and_write(f"Top {number_of_tags} tags of the last 7 days:", file_path)
         for tag, count in sorted(top_tags_7.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
+            print_and_write(f" - {tag.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
 
     if (len(top_tags_30) > 0) and (len(top_tags_30) != len(top_tags_7)):
         print_and_write(f"Top {number_of_tags} tags of the last 30 days:", file_path)
         for tag, count in sorted(top_tags_30.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
+            print_and_write(f" - {tag.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
 
-    if (len(top_tags_365) > 0) and (len(top_tags_365) != len(top_tags_30)):
-        print_and_write(f"Top {number_of_tags} tags of the last 365 days:", file_path)
-        for tag, count in sorted(top_tags_365.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
+    for i, top_tags_year in enumerate(top_tags_by_year):
+        if (len(top_tags_year) > 0) and (i != 0 or len(top_tags_year) != len(top_tags)):
+            print_and_write(f"Top {number_of_tags} tags of the year{f'-{i}' if i != 0 else ''}:", file_path)
+            for tag, count in sorted(top_tags_year.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
+                print_and_write(f" - {tag.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
 
     print(f"Statistics saved in statistics/{TIME_KEY}")
 
