@@ -41,6 +41,14 @@ def format_text(text):
     return text
 
 
+def print_and_write(text, file_path, STYLE=""):
+    print(STYLE + text + RESET)
+    with open(file_path, "a", encoding='utf-8') as file:
+        if STYLE == UNDERLINE:
+            file.write("\n____________________")
+        file.write(text + "\n")
+
+
 #######################
 #     Pixels file     #
 #######################
@@ -230,18 +238,27 @@ def display_pixels_year(pixels, number_to_display):
 
 
 def display_statistics(pixels, number_of_words):
+
+    # create a folder for the statistics
+    if not os.path.exists("statistics"):
+        os.makedirs("statistics")
+
+    TIME_KEY = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_path = f"statistics/{TIME_KEY}.txt"
+
     try:
         number_of_words = int(number_of_words)
         if (number_of_words < 1):
             number_of_words = 5
-    except ValueError:
+    except:
         number_of_words = 5
 
     pixels_stats = pixels.copy()
     pixels_stats = sorted(pixels_stats, key=lambda pixel: datetime.strptime(pixel.date, "%Y-%m-%d"), reverse=True)
 
 
-    print(UNDERLINE + "\nGeneral statistics:" + RESET)
+    print_and_write("\nGeneral statistics:", file_path, UNDERLINE)
+    
     dates = [datetime.strptime(pixel.date, "%Y-%m-%d") for pixel in pixels_stats]
     longest_streak = 1
     last_streak = 1
@@ -257,14 +274,15 @@ def display_statistics(pixels, number_of_words):
     totals_days = (dates[0] - dates[-1]).days + 1
     days_missed = totals_days - len(pixels_stats)
 
-    print(f"Number of pixels: {len(pixels_stats)}")
-    print(f"First pixel: {pixels_stats[-1].date}")
-    print(f"Longest streak: {longest_streak}")
-    print(f"Current streak: {last_streak}")
-    print(f"Number of pixels missed since the first pixel: {days_missed} ({days_missed/totals_days*100:.2f}%)")
+
+    print_and_write(f"Number of pixels: {len(pixels_stats)}", file_path)
+    print_and_write(f"First pixel: {pixels_stats[-1].date}", file_path)
+    print_and_write(f"Longest streak: {longest_streak}", file_path)
+    print_and_write(f"Current streak: {last_streak}", file_path)
+    print_and_write(f"Number of pixels missed since the first pixel: {days_missed} ({days_missed/totals_days*100:.2f}%)", file_path)
 
 
-    print(UNDERLINE + "\nMood statistics:" + RESET)
+    print_and_write("\nMood statistics:", file_path, UNDERLINE)
     moods_occurence = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
     avg_mood = 0
     avg_mood_7 = 0
@@ -291,15 +309,17 @@ def display_statistics(pixels, number_of_words):
 
     for mood in range(1, 6):
         MOOD_COLOR = get_color_of_mood([mood])
-        print(MOOD_COLOR + f" {mood}: {moods_occurence[str(mood)]}" + RESET)
+        mood_percentage = round(100 * moods_occurence[str(mood)] / len(pixels_stats), 2)
+        print_and_write(f" {mood}: {moods_occurence[str(mood)]} ({mood_percentage}%)", file_path, MOOD_COLOR)
 
-    print(f"Average mood ({len(pixels_stats)} days): {avg_mood}")
-    print(f"Average mood of the last 7 days: {avg_mood_7}")
-    print(f"Average mood of the last 30 days: {avg_mood_30}")
-    print(f"Average mood of the last 365 days: {avg_mood_365}")
+
+    print_and_write(f"Average mood ({len(pixels_stats)} days): {avg_mood}", file_path)
+    print_and_write(f"Average mood of the last 7 days: {avg_mood_7}", file_path)
+    print_and_write(f"Average mood of the last 30 days: {avg_mood_30}", file_path)
+    print_and_write(f"Average mood of the last 365 days: {avg_mood_365}", file_path)
     
 
-    print(UNDERLINE + "\nNotes statistics:" + RESET)
+    print_and_write("\nNotes statistics:", file_path, UNDERLINE)
     top_words = {}
     top_words_7 = {}
     top_words_30 = {}
@@ -328,27 +348,27 @@ def display_statistics(pixels, number_of_words):
             if i < 365:
                 top_words_365[word] = top_words_365.get(word, 0) + 1
         
-    print(f"Top {number_of_words} words:")
+
+    print_and_write(f"Top {number_of_words} words:", file_path)
     for word, count in sorted(top_words.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-        print(f" - {word} : {count} ({100 * count / len(pixels_stats):.2f}%)")
+        print_and_write(f" - {word} : {count} ({100 * count / len(pixels_stats):.2f}%)", file_path)
 
     if (len(top_words_7) > 0) and (len(top_words_7) != len(top_words)):
-        print(f"Top {number_of_words} words of the last 7 days:")
+        print_and_write(f"Top {number_of_words} words of the last 7 days:", file_path)
         for word, count in sorted(top_words_7.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)")
+            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
 
     if (len(top_words_30) > 0) and (len(top_words_30) != len(top_words_7)):
-        print(f"Top {number_of_words} words of the last 30 days:")
+        print_and_write(f"Top {number_of_words} words of the last 30 days:", file_path)
         for word, count in sorted(top_words_30.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)")
+            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
 
     if (len(top_words_365) > 0) and (len(top_words_365) != len(top_words_30)):
-        print(f"Top {number_of_words} words of the last 365 days:")
+        print_and_write(f"Top {number_of_words} words of the last 365 days:", file_path)
         for word, count in sorted(top_words_365.items(), key=lambda item: item[1], reverse=True)[:number_of_words]:
-            print(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)")
+            print_and_write(f" - {word} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
 
-
-    print(UNDERLINE + "\nTags statistics:" + RESET)
+    print_and_write("\nTags statistics:", file_path, UNDERLINE)
     top_tags = {}
     top_tags_7 = {}
     top_tags_30 = {}
@@ -369,26 +389,26 @@ def display_statistics(pixels, number_of_words):
                 top_tags_365[tag] = top_tags_365.get(tag, 0) + 1
 
     number_of_tags = 5
-    print(f"Top {number_of_tags} tags:")
+    print_and_write(f"Top {number_of_tags} tags:", file_path)
     for tag, count in sorted(top_tags.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-        print(f" - {tag} : {count} ({100 * count / len(pixels_stats):.1f}%)")
+        print_and_write(f" - {tag} : {count} ({100 * count / len(pixels_stats):.1f}%)", file_path)
 
     if (len(top_tags_7) > 0) and (len(top_tags_7) != len(top_tags)):
-        print(f"Top {number_of_tags} tags of the last 7 days:")
+        print_and_write(f"Top {number_of_tags} tags of the last 7 days:", file_path)
         for tag, count in sorted(top_tags_7.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)")
+            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 7):.1f}%)", file_path)
 
     if (len(top_tags_30) > 0) and (len(top_tags_30) != len(top_tags_7)):
-        print(f"Top {number_of_tags} tags of the last 30 days:")
+        print_and_write(f"Top {number_of_tags} tags of the last 30 days:", file_path)
         for tag, count in sorted(top_tags_30.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)")
+            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 30):.1f}%)", file_path)
 
     if (len(top_tags_365) > 0) and (len(top_tags_365) != len(top_tags_30)):
-        print(f"Top {number_of_tags} tags of the last 365 days:")
+        print_and_write(f"Top {number_of_tags} tags of the last 365 days:", file_path)
         for tag, count in sorted(top_tags_365.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
-            print(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)")
+            print_and_write(f" - {tag} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
 
-    print("\n\n")
+    print(f"Statistics saved in statistics/{TIME_KEY}")
 
 
 ######################
