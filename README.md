@@ -14,8 +14,9 @@ Enjoy!
 
 ### Additional Features
 - A warning will appear if you attempt to overwrite an existing pixel.
-- You can customize your palette in the `get_color_of_mood` function (in styles.py, line 30).
-- Supports multiple JSON files in the directory.
+- You can customize your palette in the `get_color_of_mood()` function (in styles.py, line 30).
+- Choose between multiple JSON files in the directory.
+- Add excluded words that you don't want to show in statistics in the `excluded_words.txt` file.
 
 #### Upcoming Features
 - GUI
