@@ -281,6 +281,7 @@ def display_statistics(pixels, number_of_words):
     top_words_30 = {}
     top_words_by_year = [{} for _ in range(MAX_YEARS)]
 
+    open("excluded_words.txt", "a", encoding='utf-8').close()
     excluded_words = open("excluded_words.txt", "r").read().split("\n")
     excluded_words = [format_text(word) for word in excluded_words if word != ""]
 
