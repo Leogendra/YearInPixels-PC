@@ -1,4 +1,4 @@
-# YearInPixels-PC v1.3.1
+# YearInPixels-PC v1.3.2
 
 A script for writing pixels on your computer and importing the file back through your phone.
 
@@ -20,4 +20,3 @@ Enjoy!
 
 #### Upcoming Features
 - GUI
-- Merging multiple JSON files
