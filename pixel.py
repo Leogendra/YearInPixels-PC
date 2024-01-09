@@ -111,16 +111,7 @@ def write_to_json(pixels, pixel_file):
         json.dump(pixels, file, cls=PixelEncoder, ensure_ascii=False, indent=4)
 
     print("\n> Pixel added to JSON file !\n")
-
-
-def merge_pixels_files():
-    pattern = "*.json"
-    files = glob.glob(pattern)
-    if len(files) < 2:
-        print("Not enough JSON files to merge.")
-        return
     
-    print("Not yet implemented.")
 
 #####################
 #      Display      #
@@ -685,9 +676,6 @@ if __name__ == "__main__":
         elif choice_menu == "4":
             number_to_display = input("Number of words to display (notes): ")
             display_statistics(pixels, number_to_display)
-
-        elif choice_menu == "5":
-            merge_pixels_files()
 
         elif choice_menu == "9":
             print("YearInPixels PC")
