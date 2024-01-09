@@ -8,3 +8,4 @@ venv/
 *.json
 test.py
 statistics/
+excluded_words.txt

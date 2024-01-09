@@ -34,7 +34,7 @@ def format_text(text):
         'o': ['ô', 'ö'],
         '': ['\'', '(', ')', '"']
     }
-    text = text.strip().lower()
+    text = str(text).strip().lower()
     for (char, special_chars) in accents.items():
         for special in special_chars:
             text = text.replace(special, char)
@@ -93,13 +93,19 @@ def load_pixels():
     pixel_file = find_pixel_file()
     with open(pixel_file, "r", encoding='utf-8') as f:
         pixels = json.load(f)
+
+    # delete duplicates (same day in {"date" :})
+    filtered_pixels = []
+    dates_added = {}
+    for pixel in pixels:
+        if pixel["date"] not in dates_added.keys():
+            filtered_pixels.append(pixel)
+            dates_added[pixel["date"]] = 1
     
-    return [Pixel(pixel=pixel) for pixel in pixels]
+    return pixel_file, [Pixel(pixel=pixel) for pixel in filtered_pixels]
 
 
-def write_to_json(pixels):
-
-    pixel_file = find_pixel_file()
+def write_to_json(pixels, pixel_file):
 
     with open(pixel_file, 'w', encoding='utf-8') as file:
         json.dump(pixels, file, cls=PixelEncoder, ensure_ascii=False, indent=4)
@@ -115,51 +121,6 @@ def merge_pixels_files():
         return
     
     print("Not yet implemented.")
-    
-    # print("Select the first JSON file:")
-    # to_merge_1 = find_pixel_file()
-
-    # print("Select the second JSON file:")
-    # to_merge_2 = find_pixel_file()
-    # while to_merge_2 == to_merge_1:
-    #     print("You can't merge a file to itself.")
-    #     to_merge_2 = find_pixel_file()
-
-    # # Load the pixels from the 'to_merge_1' file
-    # with open(to_merge_1, 'r') as from_file:
-    #     pixels_1 = json.load(from_file)
-
-    # # Load the pixels from the 'to_merge_2' file
-    # with open(to_merge_2, 'r') as to_file:
-    #     pixels_2 = json.load(to_file)
-
-    # # Convert pixel lists to sets for easy comparison
-    # dates_in_list1 = {pixel.date for pixel in pixels_1}
-    # dates_in_list2 = {pixel.date for pixel in pixels_2}
-
-    # conflicts = []
-    # for date1 in dates_in_list1:
-    #     if date1 in dates_in_list2:
-    #         conflicts.append((search_pixel_by_date(pixels_1, date1), search_pixel_by_date(pixels_2, date1)))
-
-    # if not conflicts:
-    #     print(">No conflicts found. Merging files...")
-    #     merged_pixels = pixels_1 + pixels_2
-    # else:
-    #     pixels_dict_1 = {pixel.date: pixel for pixel in pixels_1}
-    #     pixels_dict_2 = {pixel.date: pixel for pixel in pixels_2}
-
-    #     print("Conflicts found. Please choose how to handle them:")
-    #     print("1. Keep all pixels of the first file.")
-    #     print("2. Keep all pixels of the second file.")
-    #     print("3. Handle conflicts individually.")
-
-    #     conflict_strategy = input("Your choice: ")
-    #     while conflict_strategy not in ["1", "2", "3"]:
-    #         conflict_strategy = input("Enter a valid input: ")
-
-    # print(">Merge completed.")
-
 
 #####################
 #      Display      #
@@ -240,6 +201,8 @@ def display_pixels_year(pixels, number_to_display):
 
 
 def display_statistics(pixels, number_of_words):
+
+    MAX_YEARS = 10
 
     # create a folder for the statistics
     if not os.path.exists("statistics"):
@@ -325,7 +288,7 @@ def display_statistics(pixels, number_of_words):
     top_words = {}
     top_words_7 = {}
     top_words_30 = {}
-    top_words_by_year = [{} for _ in range(10)]
+    top_words_by_year = [{} for _ in range(MAX_YEARS)]
 
     excluded_words = open("excluded_words.txt", "r").read().split("\n")
     excluded_words = [format_text(word) for word in excluded_words if word != ""]
@@ -347,7 +310,7 @@ def display_statistics(pixels, number_of_words):
                 top_words_7[word] = top_words_7.get(word, 0) + 1
             if i < 30:
                 top_words_30[word] = top_words_30.get(word, 0) + 1
-            if i < 3650:
+            if i < 365 * MAX_YEARS:
                 top_words_by_year[i//365][word] = top_words_by_year[i//365].get(word, 0) + 1
         
 
@@ -375,20 +338,23 @@ def display_statistics(pixels, number_of_words):
     top_tags = {}
     top_tags_7 = {}
     top_tags_30 = {}
-    top_tags_by_year = [{} for _ in range(10)]
+    top_tags_by_year = [{} for _ in range(MAX_YEARS)]
 
     for i, pixel in enumerate(pixels_stats):
-        for tag in pixel.tags:
+        for categoryName, tag in pixel.tags:
             for tag_key in top_tags.keys():
-                if tag_key.lower() == tag.lower():
+                if tag_key.split(" ")[0].lower() == tag.lower():
                     tag = tag_key
                     break
+
+            if not tag.endswith(")"):
+                tag = f"{tag} ({categoryName})"
             top_tags[tag] = top_tags.get(tag, 0) + 1
             if i < 7:
                 top_tags_7[tag] = top_tags_7.get(tag, 0) + 1
             if i < 30:
                 top_tags_30[tag] = top_tags_30.get(tag, 0) + 1
-            if i < 3650:
+            if i < 365 * MAX_YEARS:
                 top_tags_by_year[i//365][tag] = top_tags_by_year[i//365].get(tag, 0) + 1
 
     number_of_tags = 5
@@ -412,7 +378,7 @@ def display_statistics(pixels, number_of_words):
             for tag, count in sorted(top_tags_year.items(), key=lambda item: item[1], reverse=True)[:number_of_tags]:
                 print_and_write(f" - {tag.capitalize()} : {count} ({100 * count / min(len(pixels_stats), 365):.1f}%)", file_path)
 
-    print(f"Statistics saved in statistics/{TIME_KEY}")
+    print(f"\n\nStatistics saved in '{file_path}'")
 
 
 ######################
@@ -451,9 +417,9 @@ def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
         if any(str(p) == str(search_mood) for p in pixel.scores):
             matching_pixels.append(pixel)
     if len(matching_pixels) > 0:
-        print(f"{len(matching_pixels)} pixels found")
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
+        print(f"{len(matching_pixels)} pixels found")
     else:
         print("No pixel found")
 
@@ -465,9 +431,9 @@ def search_pixel_by_tag(pixels, search_tag, number_of_pixels):
         if formated_tag in format_text(pixel.tags):
             matching_pixels.append(pixel)
     if len(matching_pixels) > 0:
-        print(f"{len(matching_pixels)} pixels found")
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
+        print(f"{len(matching_pixels)} pixels found")
     else:
         print("No pixel found")
 
@@ -479,9 +445,9 @@ def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
         if formated_notes in format_text(pixel.notes):
             matching_pixels.append(pixel)
     if len(matching_pixels) > 0:
-        print(f"{len(matching_pixels)} pixels found")
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
+        print(f"{len(matching_pixels)} pixels found")
     else:
         print("No pixel found")
 
@@ -549,7 +515,7 @@ def write_pixel(pixels):
         if tag != "":
             tags.append(tag)
 
-    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": scores, "notes": notes.strip(), "tags": tags})
+    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": scores, "notes": notes.strip(), "tags": [{"type": "Emotions", "entries": tags }]})
     pixels.append(new_pixel)
     print(new_pixel)
 
@@ -562,17 +528,36 @@ class Pixel:
         self.date = pixel["date"]
         self.pixel_type = pixel["type"]
         self.scores = pixel["scores"]
-        # self.score = pixel["scores"][0] # old version
         self.notes = pixel["notes"]
-        self.tags = pixel["tags"][0]["entries"] if pixel["tags"] else []
+        self.tags = self.get_tags(pixel["tags"])
+        self.raw_tags = pixel["tags"]
+
+
+    def get_tags(self, tags_raw: list):
+        tags = []
+        for category in tags_raw:
+            categoryName = category["type"]
+            for entry in category["entries"]:
+                tags.append((categoryName, entry))
+
+        return tags
+            
 
     def __str__(self):
-        MOOD_COLOR = get_color_of_mood(self.scores[0]) # doesn't take subpixels into account
+        MOOD_COLOR = get_color_of_mood(self.scores) # doesn't take subpixels into account
         date = f"Pixel Date: {UNDERLINE + self.date + RESET}"
-        mood = f"Mood: {MOOD_COLOR}{', '.join(self.scores)}{RESET}"
+        mood = f"Mood: {MOOD_COLOR}{', '.join(map(str, self.scores))}{RESET}"
         notes = MOOD_COLOR + f"Notes: {self.notes}" + RESET if self.notes else "no notes"
-        tags = f"Tags: {', '.join(self.tags)}" if self.tags else "no tags"
-        return f"{date}\n{mood}\n{notes}\n{tags}\n"
+        tags = f"Tags: {self.display_tags()}" if self.tags else "no tags"
+        return f"{date}\n{mood}\n{notes}\n{tags}"
+    
+    def display_tags(self):
+        formatedTags = ""
+        for category in self.raw_tags:
+            categoryName = category["type"]
+            formatedTags += f"[{categoryName}] : {', '.join(category['entries'])}\n"
+        return formatedTags
+
 
     def __repr__(self):
         return self.__str__()
@@ -592,13 +577,31 @@ class PixelEncoder(json.JSONEncoder):
                 "type": obj.pixel_type,
                 "scores": list(map(int, obj.scores)),
                 "notes": obj.notes,
-                "tags": [{
-                    "type": "Emotions",
-                    "entries": obj.tags
-                }]
+                "tags": self.encode_tags(obj.tags),
             }
             return encoded_pixel
         return super().default(obj)
+    
+    @staticmethod
+    def encode_tags(tags):
+        encoded_tags = []
+        
+        # Create a dict with the tags
+        tags_dict = {}
+        for categoryName, entry in tags:
+            if categoryName not in tags_dict:
+                tags_dict[categoryName] = []
+            tags_dict[categoryName].append(entry)
+
+        # Transform the dict into a list of dicts
+        for categoryName, entries in tags_dict.items():
+            encoded_tags.append({
+                "type": categoryName,
+                "entries": entries
+            })
+
+        return encoded_tags
+
     
 
 
@@ -608,7 +611,7 @@ class PixelEncoder(json.JSONEncoder):
 
 if __name__ == "__main__":
 
-    pixels = load_pixels()
+    pixel_file, pixels = load_pixels()
 
     ##########################
     #          MENU          #
@@ -631,8 +634,7 @@ if __name__ == "__main__":
 
         if choice_menu == "1":
             pixels = write_pixel(pixels)
-            
-            write_to_json(pixels)  # Write the updated pixels list to the JSON file
+            write_to_json(pixels, pixel_file)  # Write the updated pixels list to the JSON file
 
         elif choice_menu == "2":
             print("1. Search by date")
