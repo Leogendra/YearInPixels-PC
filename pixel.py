@@ -56,7 +56,7 @@ def calculate_average(pixels):
     average = 0
     for pixel in pixels:
         average += (sum(pixel.scores) / len(pixel.scores))
-    return average
+    return (average / len(pixels))
 
 
 
@@ -422,7 +422,7 @@ def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {round(calculate_average(matching_pixels),2)}")
     else:
         print("No pixel found")
 
@@ -436,7 +436,7 @@ def search_pixel_by_tag(pixels, search_tag, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {round(calculate_average(matching_pixels),2)}")
     else:
         print("No pixel found")
 
@@ -450,7 +450,7 @@ def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {round(calculate_average(matching_pixels),2)}")
     else:
         print("No pixel found")
 
