@@ -6,7 +6,10 @@ import os
 
 
 
-# Utils
+#######################
+#        Utils        #
+#######################
+
 def datetime_to_string(date: datetime) -> str:
     raw_date = date.strftime("%Y-%m-%d")
     # removing the trailing 0's
@@ -47,6 +50,14 @@ def print_and_write(text, file_path, STYLE=""):
         if STYLE == UNDERLINE:
             file.write("\n____________________")
         file.write(text + "\n")
+
+
+def calculate_average(pixels):
+    average = 0
+    for pixel in pixels:
+        average += (sum(pixel.scores) / len(pixel.scores))
+    return average
+
 
 
 #######################
@@ -411,7 +422,7 @@ def search_pixel_by_mood(pixels, search_mood, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
     else:
         print("No pixel found")
 
@@ -425,7 +436,7 @@ def search_pixel_by_tag(pixels, search_tag, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
     else:
         print("No pixel found")
 
@@ -439,7 +450,7 @@ def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
     if len(matching_pixels) > 0:
         for pixel in matching_pixels[:number_of_pixels]:
             print(pixel)
-        print(f"{len(matching_pixels)} pixels found")
+        print(f"{len(matching_pixels)} pixels found. Average mood : {calculate_average(matching_pixels)}")
     else:
         print("No pixel found")
 
