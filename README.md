@@ -1,4 +1,4 @@
-# YearInPixels-PC v1.3,3
+# YearInPixels-PC v1.4
 
 A script for writing pixels on your computer and see statistics about your entries.
 You can write a pixel for any day, see the average mood of a given note/tag, and even generate a statistic file with your most used words!
@@ -16,6 +16,7 @@ Special thanks to [pTinosq](https://github.com/pTinosq) for his Pixels reader!
 - You can customize your palette in the `get_color_of_mood()` function (in styles.py, line 30).
 - Choose between multiple JSON files in the directory.
 - Add excluded words that you don't want to show in statistics in the `excluded_words.txt` file.
+- Search for words/sentences in your notes and add them to your tags using the `tags_to_add.txt` file.
 
 #### Upcoming Features
 - GUI
