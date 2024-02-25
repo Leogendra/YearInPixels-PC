@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, date
 from styles import *
 import glob
 import json
-import os
+import os, re
 
 
 
@@ -35,7 +35,7 @@ def format_text(text):
         'i': ['î', 'ï'],
         'u': ['ù', 'ü', 'û'],
         'o': ['ô', 'ö'],
-        '': ['\'', '(', ')', '"']
+        '': ['(', ')', '"', '\'']
     }
     text = str(text).strip().lower()
     for (char, special_chars) in accents.items():
@@ -121,7 +121,7 @@ def write_to_json(pixels, pixel_file):
     with open(pixel_file, 'w', encoding='utf-8') as file:
         json.dump(pixels, file, cls=PixelEncoder, ensure_ascii=False, indent=4)
 
-    print("\n> Pixel added to JSON file !\n")
+    print("\n>Pixels file updated!\n")
     
 
 #####################
@@ -130,40 +130,8 @@ def write_to_json(pixels, pixel_file):
 
 
 def display_pixels_month(pixels, number_to_display):
-    try:
-        number_to_display = int(number_to_display)
-        if (number_to_display < 1):
-            number_to_display = len(pixels)
-    except ValueError:
-        number_to_display = len(pixels)
-
-    pixels_2_display = pixels.copy()
-    pixels_2_display = pixels_2_display[-number_to_display:]
-
-    display_grid = {}
-
-    for pixel in pixels_2_display:
-        full_date = pixel.date.split("-")
-        year = int(full_date[0])
-        month = int(full_date[1])
-        day = int(full_date[2])
-        dt = date(year, month, day)
-        week_number = dt.isocalendar()[1]
-        if display_grid.get((year, week_number)) is None:
-            display_grid[(year, week_number)] = [0] * 7
-        display_grid[(year, week_number)][dt.weekday()] = get_color_of_mood(pixel.scores)
-
-    # display the grid
-    weeks_sorted = sorted(display_grid.keys())
-
-    for week in weeks_sorted:
-        days = display_grid[week]
-        for day in days:
-            if day == 0:
-                print("  ", end='')
-            else:
-                print(day + PIXEL_CHAR + RESET, end='')
-        print()
+    # Not implemented (feel free to PR)
+    pass
 
 
 def display_pixels_year(pixels, number_to_display):
@@ -459,7 +427,7 @@ def search_pixel_by_notes(pixels, search_notes, number_of_pixels):
 #    Create a Pixel    #
 ########################
 
-def write_pixel(pixels):
+def write_pixel(pixels, pixel_file):
 
     today = datetime_to_string(datetime.now())
     yesterday = datetime_to_string(datetime.now() - timedelta(days=1))
@@ -516,13 +484,46 @@ def write_pixel(pixels):
     while tag != "":
         tag = input(f"{UNDERLINE}Tags{RESET} (empty line to stop): ")
         if tag != "":
-            tags.append(tag)
+            if tag.split(',') == 2:
+                tagCategory, tagName = tag.split(',')
+                tags.append((tagCategory, tagName))
+            else:
+                tags.append(("Emotions", tagName))
 
-    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": scores, "notes": notes.strip(), "tags": [{"type": "Emotions", "entries": tags }]})
+    new_pixel = Pixel(pixel={"date": date, "type": "Mood", "scores": scores, "notes": notes.strip(), "tags": tags})
     pixels.append(new_pixel)
     print(new_pixel)
 
-    return pixels
+    write_to_json(pixels, pixel_file)  # Write the updated pixels list to the JSON file
+
+
+
+def add_tag_to_pixels(pixels, pixel_file):
+    
+    open("tags_to_add.txt", "a", encoding='utf-8').close() # Create the file if it doens't exist
+
+    print("Add tags (one per line) in the \"tags_to_add.txt\" file, with this format : tagCategory,tagName")
+    print("The tagCategory must exists in your app!")
+    input("Enter to continue...")
+
+    all_tags_raw = [tag.strip() for tag in open("tags_to_add.txt", "r", encoding="utf-8") if tag.strip() != ""]
+    all_tags = []
+    for tag in all_tags_raw:
+        tagCategory, tagName = tag.split(",")
+        all_tags.append((tagCategory.strip(), tagName.strip()))
+
+    for i, pixel in enumerate(pixels):
+        formated_note = format_text(pixel.notes)
+        for tag in all_tags:
+            if tag not in pixel.tags:
+                formated_tag = format_text(tag[1])
+                pattern = re.compile(fr'\b{re.escape(formated_tag)}\b')
+                if re.search(pattern, formated_note):
+                    pixels[i].tags.append(tag)
+                    formated_note = re.sub(pattern, '', formated_note)
+                
+    write_to_json(pixels, pixel_file)  # Write the updated pixels list to the JSON file
+
 
 
 class Pixel:
@@ -542,7 +543,6 @@ class Pixel:
             categoryName = category["type"]
             for entry in category["entries"]:
                 tags.append((categoryName, entry))
-
         return tags
             
 
@@ -629,15 +629,14 @@ if __name__ == "__main__":
         print("2. Search pixel")
         print("3. Display pixels")
         print("4. Statistics")
-        # print("5. Merge pixels files") # Not yet implemented
+        print("5. Add tags")
         print("9. About/infos")
         print("other. exit")
         choice_menu = input("Choice: ")
         print()
 
         if choice_menu == "1":
-            pixels = write_pixel(pixels)
-            write_to_json(pixels, pixel_file)  # Write the updated pixels list to the JSON file
+            write_pixel(pixels, pixel_file)
 
         elif choice_menu == "2":
             print("1. Search by date")
@@ -645,6 +644,7 @@ if __name__ == "__main__":
             print("3. Search by mood")
             print("4. Search by tag")
             choice_search = input("Choice: ")
+            search_prompt = "To find: "
             while choice_search not in ["1", "2", "3", "4"]:
                 choice_search = input("Enter a valid input: ")
     
@@ -688,6 +688,9 @@ if __name__ == "__main__":
         elif choice_menu == "4":
             number_to_display = input("Number of words to display (notes): ")
             display_statistics(pixels, number_to_display)
+            
+        elif choice_menu == "5":
+            add_tag_to_pixels(pixels, pixel_file)
 
         elif choice_menu == "9":
             print("YearInPixels PC")
