@@ -263,7 +263,7 @@ def display_statistics(pixels, number_of_words):
     avg_mood_30 = round(avg_mood_30 / min(len(pixels_stats), 30), 2)
     avg_mood_365 = round(avg_mood_365 / min(len(pixels_stats), 365), 2)
 
-    for mood in range(1, 6):
+    for mood in range(5, 0, -1):
         MOOD_COLOR = get_color_of_mood([mood])
         mood_percentage = round(100 * moods_occurence[str(mood)] / len(pixels_stats), 2)
         print_and_write(f" {mood}: {moods_occurence[str(mood)]} ({mood_percentage}%)", file_path, MOOD_COLOR)
