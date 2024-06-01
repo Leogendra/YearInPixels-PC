@@ -292,9 +292,9 @@ def display_statistics(pixels, number_of_words):
         current_words = set()
         note = pixel.notes
         for word in note.split():
-            cleaned_word = ''.join(char for char in word if char.isalpha())
-            if len(cleaned_word) >= 3:
-                cleaned_word = format_text(cleaned_word)
+            alpha_word = ''.join(char for char in word if char.isalpha())
+            if len(alpha_word) >= 3:
+                cleaned_word = format_text(word)
                 if cleaned_word not in excluded_words:
                     current_words.add(cleaned_word)
 
