@@ -11,6 +11,9 @@ Special thanks to [pTinosq](https://github.com/pTinosq) for his Pixels reader!
 - Launch the script using `python pixels.py`
 - Select if you want to write/view a pixel, search or see statistics.
 
+Example of a statistics report:
+![Statistics](assets/example_statistics.png)
+
 ### Additional Features
 - A warning will appear if you attempt to overwrite an existing pixel.
 - You can customize your palette in the `get_color_of_mood()` function (in styles.py, line 30).
